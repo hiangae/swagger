@@ -70,7 +70,7 @@ def process_function(app_name, module_name, func_name, func, swagger, module):
             "validate_http_method" in ast.dump(node) and isinstance(node, ast.Call)
             for node in ast.walk(tree)
         ):
-            print(f"Skipping {func_name}: 'validate_http_method' not found")
+            #print(f"Skipping {func_name}: 'validate_http_method' not found")
             return
 
         # Find the Pydantic model used in the validate_request decorator
@@ -110,13 +110,10 @@ def process_function(app_name, module_name, func_name, func, swagger, module):
 
         # Define query parameters for methods that retrieve data
         params = []
-        if http_method in ["GET", "DELETE", "OPTIONS", "HEAD"]:
+        if http_method in ["GET", "DELETE", "OPTIONS", "HEAD", "POST"]:
             signature = inspect.signature(func)
             for param_name, param in signature.parameters.items():
-                if (
-                    param.default is inspect.Parameter.empty
-                    and not "kwargs" in param_name
-                ):
+                if (not "kwargs" in param_name):
                     param_type = "string"
                     params.append(
                         {
@@ -135,6 +132,9 @@ def process_function(app_name, module_name, func_name, func, swagger, module):
             }
         }
 
+        # Documentation
+        description = inspect.getdoc(func)
+
         # Assign tags for the Swagger documentation
         tags = [module_name]
 
@@ -150,6 +150,7 @@ def process_function(app_name, module_name, func_name, func, swagger, module):
             "requestBody": request_body if request_body else None,
             "responses": responses,
             "security": [{"basicAuth": []}],
+            "description": description,
         }
     except Exception as e:
         # Log any errors that occur during processing
