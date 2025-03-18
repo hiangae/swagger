@@ -147,7 +147,7 @@ def process_function(app_name, module_name, func_name, func, swagger, module):
             "summary": func_name.title().replace("_", " "),
             "tags": tags,
             "parameters": params,
-            "requestBody": request_body if request_body else None,
+            "requestBody": request_body if request_body else {},
             "responses": responses,
             "security": [{"basicAuth": []}],
             "description": description,
